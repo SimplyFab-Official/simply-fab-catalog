@@ -63,10 +63,10 @@
             const [inputPassword, setInputPassword] = useState('');
             const [loading, setLoading] = useState(true);
 
-            // Lightbox and Checklist states
+            // Lightbox and Cart/Checklist states
             const [lightboxImg, setLightboxImg] = useState(null);
-            const [checklist, setChecklist] = useState([]);
-            const [showChecklistModal, setShowChecklistModal] = useState(false);
+            const [cart, setCart] = useState([]);
+            const [showCartModal, setShowCartModal] = useState(false);
 
             const [basePrices, setBasePrices] = useState(() => {
                 const saved = localStorage.getItem('simplyfab_base_prices');
@@ -136,27 +136,26 @@
                 }
             };
 
-            const addToChecklist = (item, finalPrice) => {
-                if (!checklist.some(i => i.id === item.id)) {
-                    setChecklist(prev => [...prev, { ...item, finalPrice }]);
+            const addToCart = (item, finalPrice) => {
+                if (!cart.some(i => i.id === item.id)) {
+                    setCart(prev => [...prev, { ...item, finalPrice }]);
                 } else {
-                    alert(`${item.name} is already in your checklist!`);
+                    alert(`${item.name} is already in your cart!`);
                 }
             };
 
-            const removeFromChecklist = (id) => {
-                setChecklist(prev => prev.filter(i => i.id !== id));
+            const removeFromCart = (id) => {
+                setCart(prev => prev.filter(i => i.id !== id));
             };
 
             const sendToMessenger = () => {
-                if (checklist.length === 0) return;
+                if (cart.length === 0) return;
                 
-                const itemCodes = checklist.map(i => i.name).join(', ');
-                const totalPrice = checklist.reduce((sum, i) => sum + i.finalPrice, 0);
+                const itemCodes = cart.map(i => i.name).join(', ');
+                const totalPrice = cart.reduce((sum, i) => sum + i.finalPrice, 0);
                 
                 const message = encodeURIComponent(`Hi Simply Fab! I would like to reserve/book these items from your catalog:\n\nItems: ${itemCodes}\nTotal Estimated Amount: ₱${totalPrice.toLocaleString()}\n\nPlease help me process my order. Thank you!`);
                 
-                // Open Messenger link with pre-filled message text
                 window.open(`https://m.me/110124887067313?text=${message}`, '_blank');
             };
 
@@ -184,20 +183,20 @@
                         </div>
                     )}
 
-                    {/* Checklist Overview Modal */}
-                    {showChecklistModal && (
+                    {/* Cart / Checklist Overview Modal */}
+                    {showCartModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                             <div className="glass-card p-6 sm:p-8 rounded-2xl max-w-lg w-full shadow-2xl border border-amber-500/30 max-h-[90vh] flex flex-col">
                                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
-                                    <h3 className="font-serif text-xl text-white font-bold">Your Gown Checklist</h3>
-                                    <button onClick={() => setShowChecklistModal(false)} className="text-stone-400 hover:text-white text-lg">✕</button>
+                                    <h3 className="font-serif text-xl text-white font-bold">Your Cart / Checklist</h3>
+                                    <button onClick={() => setShowCartModal(false)} className="text-stone-400 hover:text-white text-lg">✕</button>
                                 </div>
 
                                 <div className="flex-grow overflow-y-auto space-y-3 pr-1 my-2">
-                                    {checklist.length === 0 ? (
-                                        <p className="text-center text-stone-400 py-10 text-sm">Your checklist is currently empty. Click "Add to Checklist" on any gown!</p>
+                                    {cart.length === 0 ? (
+                                        <p className="text-center text-stone-400 py-10 text-sm">Your cart is currently empty. Click "Add to Cart" on any gown!</p>
                                     ) : (
-                                        checklist.map(item => (
+                                        cart.map(item => (
                                             <div key={item.id} className="flex items-center justify-between bg-black/40 p-3 rounded-lg border border-white/10">
                                                 <div className="flex items-center gap-3">
                                                     <img src={item.image} alt={item.name} className="w-12 h-16 object-cover rounded" />
@@ -207,7 +206,7 @@
                                                     </div>
                                                 </div>
                                                 <button 
-                                                    onClick={() => removeFromChecklist(item.id)}
+                                                    onClick={() => removeFromCart(item.id)}
                                                     className="text-red-400 hover:text-red-300 text-xs bg-red-950/40 px-2.5 py-1 rounded border border-red-500/30">
                                                     Remove
                                                 </button>
@@ -216,11 +215,11 @@
                                     )}
                                 </div>
 
-                                {checklist.length > 0 && (
+                                {cart.length > 0 && (
                                     <div className="pt-4 border-t border-white/10 mt-2">
                                         <div className="flex justify-between text-sm text-white mb-4 font-semibold">
-                                            <span>Total Items: {checklist.length}</span>
-                                            <span className="text-amber-200">Total: ₱{checklist.reduce((sum, i) => sum + i.finalPrice, 0).toLocaleString()}</span>
+                                            <span>Total Items: {cart.length}</span>
+                                            <span className="text-amber-200">Total: ₱{cart.reduce((sum, i) => sum + i.finalPrice, 0).toLocaleString()}</span>
                                         </div>
                                         <button 
                                             onClick={sendToMessenger}
@@ -281,12 +280,12 @@
                             </nav>
 
                             <div className="flex items-center gap-3">
-                                {/* Floating Checklist Button */}
+                                {/* Floating Cart Button */}
                                 <button 
-                                    onClick={() => setShowChecklistModal(true)}
+                                    onClick={() => setShowCartModal(true)}
                                     className="bg-amber-200 hover:bg-white text-stone-900 px-3.5 py-2 rounded-full text-xs font-semibold flex items-center gap-2 shadow-lg transition">
-                                    <span>📋 Checklist</span>
-                                    <span className="bg-stone-900 text-amber-200 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">{checklist.length}</span>
+                                    <span>🛒 Add to Cart</span>
+                                    <span className="bg-stone-900 text-amber-200 w-5 h-5 rounded-full flex items-center justify-center text-[10px]">{cart.length}</span>
                                 </button>
 
                                 {isAdmin && (
@@ -334,7 +333,7 @@
                                 {displayedItems.map((item) => {
                                     const basePrice = basePrices[item.id] !== undefined ? basePrices[item.id] : item.defaultBase;
                                     const finalPrice = basePrice + MARKUP_PRICE;
-                                    const isInChecklist = checklist.some(i => i.id === item.id);
+                                    const isInCart = cart.some(i => i.id === item.id);
 
                                     return (
                                         <div key={item.id} className="glass-card rounded-xl overflow-hidden shadow-2xl hover:border-amber-400/40 transition-all duration-500 flex flex-col group">
@@ -387,9 +386,9 @@
                                                     ) : (
                                                         <div className="flex flex-col gap-2">
                                                             <button 
-                                                                onClick={() => addToChecklist(item, finalPrice)}
-                                                                className={`w-full text-stone-900 font-medium text-center text-[10px] sm:text-xs py-2 rounded transition shadow-md ${isInChecklist ? 'bg-emerald-300 hover:bg-emerald-200' : 'bg-amber-200 hover:bg-white'}`}>
-                                                                {isInChecklist ? '✓ Added to Checklist' : '+ Add to Checklist'}
+                                                                onClick={() => addToCart(item, finalPrice)}
+                                                                className={`w-full text-stone-900 font-medium text-center text-[10px] sm:text-xs py-2 rounded transition shadow-md ${isInCart ? 'bg-emerald-300 hover:bg-emerald-200' : 'bg-amber-200 hover:bg-white'}`}>
+                                                                {isInCart ? '✓ Added to Cart' : '🛒 Add to Cart'}
                                                             </button>
                                                             <a 
                                                                 href="https://www.facebook.com/messages/t/110124887067313" 
