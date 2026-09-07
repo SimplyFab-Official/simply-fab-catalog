@@ -94,8 +94,8 @@
                 setLoading(true);
                 const generated = [];
                 
-                // Capped at 101 since Item 101 is your latest uploaded image. 
-                // As you upload more items (e.g., Item 102, 103, etc.), simply change this number to match your latest item.
+                // STRICT LIMIT: Capped strictly at 101 because that is your latest uploaded image.
+                // When you upload Item 102 later, simply change this number from 101 to 102.
                 for (let i = 3; i <= 101; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
