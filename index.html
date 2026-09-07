@@ -94,8 +94,8 @@
                 setLoading(true);
                 const generated = [];
                 
-                // Restored full range up to Item 110 so all remaining items appear as you upload them
-                for (let i = 3; i <= 110; i++) {
+                // Only generate items up to Item 101 to prevent blank cards for unuploaded items
+                for (let i = 3; i <= 101; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
