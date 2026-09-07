@@ -53,7 +53,6 @@
             const GITHUB_USER = "SimplyFab-Official";
             const GITHUB_REPO = "simply-fab-catalog"; 
             const GITHUB_BRANCH = "main";
-            const FOLDER_PATH = "images";
 
             const MARKUP_PRICE = 700; 
 
@@ -99,8 +98,8 @@
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
-                    // Using jsDelivr CDN to bypass GitHub CORB image blocking completely
-                    const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${FOLDER_PATH}/${itemName}.jpg`;
+                    // Direct root directory link using jsDelivr CDN
+                    const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${itemName}.jpg`;
 
                     generated.push({
                         id: paddedNum,
