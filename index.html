@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simply Fab - Exclusive Gown & Apparel Catalog</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0;
+            background-color: #121212;
+            color: #f3f4f6;
+        }
+        .font-serif { font-family: 'Playfair Display', serif; }
+        
+        .hero-bg {
+            background-image: linear-gradient(to bottom, rgba(15, 15, 15, 0.75), rgba(18, 18, 18, 0.95)), 
+                              url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=2000');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-nav {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function App() {
+            // CONFIGURATION: Set to your exact GitHub organization/user and repository
+            const GITHUB_USER = "SimplyFab-Official";
+            const GITHUB_REPO = "YOUR_REPO_NAME"; // Replace with your created repo name
+            const GITHUB_BRANCH = "main";
+            const FOLDER_PATH = "images"; // Folder where Item 003.jpg to Item 110.jpg are stored
+
+            const MARKUP_PRICE = 700; // Fixed automatic markup in pesos hidden from visitors
+
+            const [items, setItems] = useState([]);
+            const [filterTab, setFilterTab] = useState('all'); // 'all' or 'new'
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [showPasswordModal, setShowPasswordModal] = useState(false);
+            const [inputPassword, setInputPassword] = useState('');
+            const [loading, setLoading] = useState(true);
+
+            // Load saved base prices from localStorage if available, or initialize defaults
+            const [basePrices, setBasePrices] = useState(() => {
+                const saved = localStorage.getItem('simplyfab_base_prices');
+                return saved ? JSON.parse(saved) : {};
+            });
+
+            useEffect(() => {
+                generateCatalogItems();
+
+                // Keyboard Shortcut listener: Shift + Ctrl + M triggers password prompt
+                const handleKeyDown = (e) => {
+                    if (e.shiftKey && e.ctrlKey && (e.key === 'm' || e.key === 'M')) {
+                        e.preventDefault();
+                        if (isAdmin) {
+                            setIsAdmin(false);
+                        } else {
+                            setShowPasswordModal(true);
+                        }
+                    }
+                };
+
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [isAdmin]);
+
+            useEffect(() => {
+                localStorage.setItem('simplyfab_base_prices', JSON.stringify(basePrices));
+            }, [basePrices]);
+
+            // Generate items from Item 003 up to Item 110 automatically
+            const generateCatalogItems = () => {
+                setLoading(true);
+                const generated = [];
+                
+                for (let i = 3; i <= 110; i++) {
+                    const paddedNum = String(i).padStart(3, '0');
+                    const itemName = `Item ${paddedNum}`;
+                    
+                    const imageUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${FOLDER_PATH}/${encodeURIComponent(itemName)}.jpg`;
+
+                    generated.push({
+                        id: paddedNum,
+                        numericId: i,
+                        name: itemName,
+                        image: imageUrl,
+                        defaultBase: 1500
+                    });
+                }
+                setItems(generated);
+                setLoading(false);
+            };
+
+            const handleBasePriceChange = (id, newBasePrice) => {
+                setBasePrices(prev => ({
+                    ...prev,
+                    [id]: parseFloat(newBasePrice) || 0
+                }));
+            };
+
+            const handlePasswordSubmit = (e) => {
+                e.preventDefault();
+                if (inputPassword === '021910') {
+                    setIsAdmin(true);
+                    setShowPasswordModal(false);
+                    setInputPassword('');
+                } else {
+                    alert('Incorrect Master Admin Password');
+                    setInputPassword('');
+                }
+            };
+
+            // Define New Arrivals as the latest items (e.g., Item 095 through Item 110)
+            const displayedItems = items.filter(item => {
+                if (filterTab === 'new') {
+                    return item.numericId >= 95;
+                }
+                return true;
+            });
+
+            return (
+                <div className="min-h-screen flex flex-col justify-between hero-bg relative">
+                    
+                    {/* Password Modal Popup */}
+                    {showPasswordModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+                            <div className="glass-card p-6 sm:p-8 rounded-2xl max-w-sm w-full mx-4 shadow-2xl border border-amber-500/30">
+                                <h3 className="font-serif text-xl text-white mb-2 text-center">Master Admin Access</h3>
+                                <p className="text-xs text-stone-400 mb-6 text-center">Enter your secure passcode to manage catalog pricing.</p>
+                                <form onSubmit={handlePasswordSubmit}>
+                                    <input 
+                                        type="password" 
+                                        placeholder="Enter Password" 
+                                        value={inputPassword}
+                                        onChange={(e) => setInputPassword(e.target.value)}
+                                        autoFocus
+                                        className="w-full bg-black/50 border border-stone-700 rounded-lg px-4 py-2.5 text-white text-center tracking-widest text-lg mb-4 focus:outline-none focus:border-amber-400"
+                                    />
+                                    <div className="flex gap-3">
+                                        <button 
+                                            type="button" 
+                                            onClick={() => { setShowPasswordModal(false); setInputPassword(''); }}
+                                            className="flex-1 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs py-2.5 rounded-lg transition">
+                                            Cancel
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            className="flex-1 bg-amber-200 hover:bg-white text-stone-900 font-medium text-xs py-2.5 rounded-lg transition">
+                                            Authorize
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Header */}
+                    <header className="glass-nav sticky top-0 z-40">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                            <div>
+                                <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl tracking-widest text-white font-bold">SIMPLY FAB</h1>
+                                <p className="text-[9px] sm:text-[10px] tracking-widest text-amber-200/70 uppercase">Exclusive Gown Collection</p>
+                            </div>
+
+                            <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-stone-300">
+                                <button onClick={() => setFilterTab('all')} className={`transition ${filterTab === 'all' ? 'text-amber-300 font-semibold' : 'hover:text-white'}`}>Collection</button>
+                                <button onClick={() => setFilterTab('new')} className={`transition ${filterTab === 'new' ? 'text-amber-300 font-semibold' : 'hover:text-white'}`}>New Arrivals</button>
+                                <a href="#contact" className="hover:text-white transition">Contact</a>
+                            </nav>
+
+                            <div className="flex items-center gap-3">
+                                {isAdmin && (
+                                    <div className="flex items-center gap-2 bg-stone-900/90 border border-amber-500/40 px-3 py-1.5 rounded-full shadow-lg">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        <span className="text-amber-300 text-[10px] sm:text-xs font-medium tracking-wide">
+                                            Master Admin Active
+                                        </span>
+                                        <button 
+                                            onClick={() => setIsAdmin(false)}
+                                            className="ml-2 text-[10px] text-stone-400 hover:text-white underline">
+                                            Exit
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content / Catalog Grid */}
+                    <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-10 sm:py-16 flex-grow w-full">
+                        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
+                            <span className="text-amber-300/90 text-xs sm:text-sm tracking-[0.25em] uppercase font-medium block mb-3">Artisan Craft & Elegance</span>
+                            <h2 className="font-serif text-3xl sm:text-5xl text-white tracking-wide mb-4">
+                                {filterTab === 'new' ? 'NEW ARRIVALS' : 'COLLECTION CATALOG'}
+                            </h2>
+                            <p className="text-stone-300 text-xs sm:text-sm md:text-base tracking-wide leading-relaxed px-4 mb-8">
+                                {filterTab === 'new' 
+                                    ? 'Explore our latest additions featuring freshly crafted silhouettes and breathtaking new seasonal designs.' 
+                                    : 'Discover our curated luxury gowns featuring immaculate silk folds, delicate chiffon textures, and bespoke silhouettes designed for your unforgettable moments.'}
+                            </p>
+
+                            {/* Mobile / Desktop Filter Buttons */}
+                            <div className="flex justify-center gap-3">
+                                <button 
+                                    onClick={() => setFilterTab('all')}
+                                    className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition duration-300 ${filterTab === 'all' ? 'bg-amber-200 text-stone-900 shadow-lg' : 'bg-white/10 text-stone-300 hover:bg-white/20'}`}>
+                                    All Collection
+                                </button>
+                                <button 
+                                    onClick={() => setFilterTab('new')}
+                                    className={`px-5 py-2 rounded-full text-xs sm:text-sm font-medium transition duration-300 ${filterTab === 'new' ? 'bg-amber-200 text-stone-900 shadow-lg' : 'bg-white/10 text-stone-300 hover:bg-white/20'}`}>
+                                    ✨ New Arrivals
+                                </button>
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="text-center py-24 text-amber-200/80 font-medium tracking-widest text-sm">LOADING EXCLUSIVE COLLECTION...</div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
+                                {displayedItems.map((item) => {
+                                    const basePrice = basePrices[item.id] !== undefined ? basePrices[item.id] : item.defaultBase;
+                                    const finalPrice = basePrice + MARKUP_PRICE;
+
+                                    return (
+                                        <div key={item.id} className="glass-card rounded-xl overflow-hidden shadow-2xl hover:border-amber-400/40 transition-all duration-500 flex flex-col group">
+                                            <div className="aspect-[3/4] bg-stone-900 overflow-hidden relative">
+                                                <img 
+                                                    src={item.image} 
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-700 opacity-90 group-hover:opacity-100"
+                                                    onError={(e) => {
+                                                        e.target.src = "https://images.unsplash.com/photo-1594552072238-b8a3da72ae8c?auto=format&fit=crop&q=80&w=600";
+                                                    }}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-60"></div>
+                                                <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/60 backdrop-blur-md text-amber-100 text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-md border border-white/10">
+                                                    {item.name}
+                                                </span>
+                                                {item.numericId >= 95 && (
+                                                    <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-amber-400 text-stone-900 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded shadow-md uppercase tracking-wider">
+                                                        New
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <div className="p-3 sm:p-5 flex flex-col justify-between flex-grow bg-stone-900/40">
+                                                <div>
+                                                    <h3 className="font-serif text-sm sm:text-lg text-white mb-0.5">{item.name}</h3>
+                                                    <p className="text-[10px] sm:text-xs text-stone-400 mb-3 tracking-wide">Elegant V-Neck Gown</p>
+                                                </div>
+
+                                                <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between gap-1">
+                                                    <div>
+                                                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-stone-400 block">Total Amount</span>
+                                                        <span className="text-sm sm:text-lg font-bold text-amber-200">₱{finalPrice.toLocaleString()}</span>
+                                                    </div>
+
+                                                    {isAdmin ? (
+                                                        <div className="text-right">
+                                                            <span className="text-[9px] text-amber-400 font-medium block">Base: ₱{basePrice}</span>
+                                                            <input 
+                                                                type="number" 
+                                                                value={basePrice}
+                                                                onChange={(e) => handleBasePriceChange(item.id, e.target.value)}
+                                                                className="w-16 sm:w-20 text-xs p-1 border border-amber-500/50 rounded mt-0.5 text-right bg-black/60 text-white focus:outline-none focus:border-amber-400 font-medium"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <button className="bg-amber-100 hover:bg-white text-stone-900 font-medium text-[10px] sm:text-xs px-2.5 sm:px-3.5 py-1.5 rounded transition shadow-md">
+                                                            Book
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer id="contact" className="glass-nav text-stone-400 py-10 mt-20">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs gap-4 text-center sm:text-left">
+                            <div>
+                                <p className="font-serif text-white text-sm font-bold mb-1 tracking-wider">SIMPLY FAB GOWN RENTAL</p>
+                                <p className="text-stone-400 text-[11px]">&copy; {new Date().getFullYear()} All rights reserved. Professional elegance for every occasion.</p>
+                            </div>
+                            <div className="sm:text-right">
+                                <p className="text-amber-200 font-medium">Inquiries: +79 682-430-5337</p>
+                                <p className="text-stone-500 text-[11px]">simplyfabgowns.com</p>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
