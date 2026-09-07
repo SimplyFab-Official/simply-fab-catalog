@@ -94,11 +94,11 @@
                 setLoading(true);
                 const generated = [];
                 
-                for (let i = 3; i <= 110; i++) {
+                // Updated upper limit to Item 101 as requested
+                for (let i = 3; i <= 101; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
-                    // Direct root directory link using jsDelivr CDN
                     const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${itemName}.jpg`;
 
                     generated.push({
