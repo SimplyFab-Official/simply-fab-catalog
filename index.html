@@ -55,6 +55,7 @@
             const GITHUB_BRANCH = "main";
 
             const MARKUP_PRICE = 700; 
+            const VND_TO_PHP_RATE = 0.00235; // Adjust this conversion rate as needed
 
             const [items, setItems] = useState([]);
             const [filterTab, setFilterTab] = useState('all');
@@ -68,8 +69,8 @@
             const [cart, setCart] = useState([]);
             const [showCartModal, setShowCartModal] = useState(false);
 
-            const [basePrices, setBasePrices] = useState(() => {
-                const saved = localStorage.getItem('simplyfab_base_prices');
+            const [basePricesVnd, setBasePricesVnd] = useState(() => {
+                const saved = localStorage.getItem('simplyfab_base_prices_vnd');
                 return saved ? JSON.parse(saved) : {};
             });
 
@@ -92,8 +93,8 @@
             }, [isAdmin]);
 
             useEffect(() => {
-                localStorage.setItem('simplyfab_base_prices', JSON.stringify(basePrices));
-            }, [basePrices]);
+                localStorage.setItem('simplyfab_base_prices_vnd', JSON.stringify(basePricesVnd));
+            }, [basePricesVnd]);
 
             const generateCatalogItems = () => {
                 setLoading(true);
@@ -103,7 +104,6 @@
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
-                    // Using raw.githubusercontent with a slight delay or standard jsDelivr with error handling
                     const imageUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${itemName}.jpg`;
 
                     generated.push({
@@ -111,17 +111,17 @@
                         numericId: i,
                         name: itemName,
                         image: imageUrl,
-                        defaultBase: 1500
+                        defaultBaseVnd: 500000 // Default 500,000 VND
                     });
                 }
                 setItems(generated);
                 setLoading(false);
             };
 
-            const handleBasePriceChange = (id, newBasePrice) => {
-                setBasePrices(prev => ({
+            const handleBasePriceVndChange = (id, newVndPrice) => {
+                setBasePricesVnd(prev => ({
                     ...prev,
-                    [id]: parseFloat(newBasePrice) || 0
+                    [id]: parseFloat(newVndPrice) || 0
                 }));
             };
 
@@ -292,7 +292,7 @@
                                 {isAdmin && (
                                     <div className="flex items-center gap-2 bg-stone-900/90 border border-amber-500/40 px-3 py-1.5 rounded-full shadow-lg">
                                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                        <span className="text-amber-300 text-[10px] sm:text-xs font-medium tracking-wide">Admin</span>
+                                        <span className="text-amber-300 text-[10px] sm:text-xs font-medium tracking-wide">Admin (VND Input)</span>
                                         <button onClick={() => setIsAdmin(false)} className="ml-1 text-[10px] text-stone-400 hover:text-white underline">Exit</button>
                                     </div>
                                 )}
@@ -332,8 +332,9 @@
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
                                 {displayedItems.map((item) => {
-                                    const basePrice = basePrices[item.id] !== undefined ? basePrices[item.id] : item.defaultBase;
-                                    const finalPrice = basePrice + MARKUP_PRICE;
+                                    const baseVnd = basePricesVnd[item.id] !== undefined ? basePricesVnd[item.id] : item.defaultBaseVnd;
+                                    const convertedPhp = baseVnd * VND_TO_PHP_RATE;
+                                    const finalPrice = Math.round(convertedPhp + MARKUP_PRICE);
                                     const isInCart = cart.some(i => i.id === item.id);
 
                                     return (
@@ -376,13 +377,17 @@
                                                     </div>
 
                                                     {isAdmin ? (
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-[9px] text-amber-400 font-medium">Base: ₱{basePrice}</span>
+                                                        <div className="flex flex-col gap-1">
+                                                            <div className="flex justify-between items-center text-[9px] text-amber-400 font-medium">
+                                                                <span>Base VND:</span>
+                                                                <span>≈ ₱{Math.round(convertedPhp).toLocaleString()}</span>
+                                                            </div>
                                                             <input 
                                                                 type="number" 
-                                                                value={basePrice}
-                                                                onChange={(e) => handleBasePriceChange(item.id, e.target.value)}
-                                                                className="w-16 sm:w-20 text-xs p-1 border border-amber-500/50 rounded text-right bg-black/60 text-white focus:outline-none focus:border-amber-400 font-medium"
+                                                                value={baseVnd}
+                                                                onChange={(e) => handleBasePriceVndChange(item.id, e.target.value)}
+                                                                className="w-full text-xs p-1.5 border border-amber-500/50 rounded text-right bg-black/60 text-white focus:outline-none focus:border-amber-400 font-medium"
+                                                                placeholder="Enter VND"
                                                             />
                                                         </div>
                                                     ) : (
