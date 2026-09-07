@@ -99,8 +99,8 @@
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
-                    // Standard GitHub raw link format
-                    const imageUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${FOLDER_PATH}/${itemName}.jpg`;
+                    // Using jsDelivr CDN to bypass GitHub CORB image blocking completely
+                    const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${FOLDER_PATH}/${itemName}.jpg`;
 
                     generated.push({
                         id: paddedNum,
@@ -248,11 +248,8 @@
                                                     alt={item.name}
                                                     className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-700 opacity-90 group-hover:opacity-100"
                                                     onError={(e) => {
-                                                        // Fallback mechanism to check .png or .JPG if .jpg fails
                                                         if (!e.target.src.includes('.png')) {
                                                             e.target.src = item.image.replace('.jpg', '.png');
-                                                        } else if (!e.target.src.includes('.JPG')) {
-                                                            e.target.src = item.image.replace('.png', '.JPG');
                                                         } else {
                                                             e.target.src = "https://images.unsplash.com/photo-1594552072238-b8a3da72ae8c?auto=format&fit=crop&q=80&w=600";
                                                         }
