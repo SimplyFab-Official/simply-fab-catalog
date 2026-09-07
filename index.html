@@ -94,8 +94,10 @@
                 setLoading(true);
                 const generated = [];
                 
-                // Generating items up to Item 106 to exclude 107 through 110
-                for (let i = 3; i <= 106; i++) {
+                // Generate items up to Item 101, explicitly excluding Item 102 through Item 106
+                for (let i = 3; i <= 110; i++) {
+                    if (i >= 102 && i <= 106) continue; // Skip Item 102 to 106
+                    
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
