@@ -94,8 +94,8 @@
                 setLoading(true);
                 const generated = [];
                 
-                // Updated upper limit to Item 101 as requested
-                for (let i = 3; i <= 101; i++) {
+                // Restored full range up to Item 110 so all remaining items appear as you upload them
+                for (let i = 3; i <= 110; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
