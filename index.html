@@ -94,10 +94,9 @@
                 setLoading(true);
                 const generated = [];
                 
-                // Explicitly skip items 102 through 106
-                for (let i = 3; i <= 110; i++) {
-                    if (i >= 102 && i <= 106) continue;
-                    
+                // Capped at 101 since Item 101 is your latest uploaded image. 
+                // As you upload more items (e.g., Item 102, 103, etc.), simply change this number to match your latest item.
+                for (let i = 3; i <= 101; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
