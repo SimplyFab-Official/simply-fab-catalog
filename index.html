@@ -54,9 +54,6 @@
             const GITHUB_REPO = "simply-fab-catalog"; 
             const GITHUB_BRANCH = "main";
 
-            const MARKUP_PRICE = 700; 
-            const VND_TO_PHP_RATE = 0.00235;
-
             const [items, setItems] = useState([]);
             const [filterTab, setFilterTab] = useState('all');
             const [isAdmin, setIsAdmin] = useState(false);
@@ -69,8 +66,8 @@
             const [cart, setCart] = useState([]);
             const [showCartModal, setShowCartModal] = useState(false);
 
-            const [basePricesVnd, setBasePricesVnd] = useState(() => {
-                const saved = localStorage.getItem('simplyfab_base_prices_vnd');
+            const [pricesPhp, setPricesPhp] = useState(() => {
+                const saved = localStorage.getItem('simplyfab_prices_php');
                 return saved ? JSON.parse(saved) : {};
             });
 
@@ -93,14 +90,13 @@
             }, [isAdmin]);
 
             useEffect(() => {
-                localStorage.setItem('simplyfab_base_prices_vnd', JSON.stringify(basePricesVnd));
-            }, [basePricesVnd]);
+                localStorage.setItem('simplyfab_prices_php', JSON.stringify(pricesPhp));
+            }, [pricesPhp]);
 
             const generateCatalogItems = () => {
                 setLoading(true);
                 const generated = [];
                 
-                // Updated upper bound to 115 to include the newly uploaded items
                 for (let i = 3; i <= 115; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
@@ -112,17 +108,17 @@
                         numericId: i,
                         name: itemName,
                         image: imageUrl,
-                        defaultBaseVnd: 500000 // Default 500,000 VND
+                        defaultPricePhp: 1500 // Default 1,500 PHP
                     });
                 }
                 setItems(generated);
                 setLoading(false);
             };
 
-            const handleBasePriceVndChange = (id, newVndPrice) => {
-                setBasePricesVnd(prev => ({
+            const handlePricePhpChange = (id, newPhpPrice) => {
+                setPricesPhp(prev => ({
                     ...prev,
-                    [id]: parseFloat(newVndPrice) || 0
+                    [id]: parseFloat(newPhpPrice) || 0
                 }));
             };
 
@@ -163,7 +159,7 @@
 
             const displayedItems = items.filter(item => {
                 if (filterTab === 'new') {
-                    return item.numericId >= 102; // Updated threshold to feature newly added items
+                    return item.numericId >= 102;
                 }
                 return true;
             });
@@ -292,7 +288,7 @@
                                 {isAdmin && (
                                     <div className="flex items-center gap-2 bg-stone-900/90 border border-amber-500/40 px-3 py-1.5 rounded-full shadow-lg">
                                         <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                        <span className="text-amber-300 text-[10px] sm:text-xs font-medium tracking-wide">Admin (VND Input)</span>
+                                        <span className="text-amber-300 text-[10px] sm:text-xs font-medium tracking-wide">Admin (PHP Input)</span>
                                         <button onClick={() => setIsAdmin(false)} className="ml-1 text-[10px] text-stone-400 hover:text-white underline">Exit</button>
                                     </div>
                                 )}
@@ -332,9 +328,7 @@
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
                                 {displayedItems.map((item) => {
-                                    const baseVnd = basePricesVnd[item.id] !== undefined ? basePricesVnd[item.id] : item.defaultBaseVnd;
-                                    const convertedPhp = baseVnd * VND_TO_PHP_RATE;
-                                    const finalPrice = Math.round(convertedPhp + MARKUP_PRICE);
+                                    const finalPrice = pricesPhp[item.id] !== undefined ? pricesPhp[item.id] : item.defaultPricePhp;
                                     const isInCart = cart.some(i => i.id === item.id);
 
                                     return (
@@ -378,16 +372,13 @@
 
                                                     {isAdmin ? (
                                                         <div className="flex flex-col gap-1">
-                                                            <div className="flex justify-between items-center text-[9px] text-amber-400 font-medium">
-                                                                <span>Base VND:</span>
-                                                                <span>≈ ₱{Math.round(convertedPhp).toLocaleString()}</span>
-                                                            </div>
+                                                            <span className="text-[9px] text-amber-400 font-medium">Set PHP Price:</span>
                                                             <input 
                                                                 type="number" 
-                                                                value={baseVnd}
-                                                                onChange={(e) => handleBasePriceVndChange(item.id, e.target.value)}
+                                                                value={finalPrice}
+                                                                onChange={(e) => handlePricePhpChange(item.id, e.target.value)}
                                                                 className="w-full text-xs p-1.5 border border-amber-500/50 rounded text-right bg-black/60 text-white focus:outline-none focus:border-amber-400 font-medium"
-                                                                placeholder="Enter VND"
+                                                                placeholder="Enter PHP"
                                                             />
                                                         </div>
                                                     ) : (
