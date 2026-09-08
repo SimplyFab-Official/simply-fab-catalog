@@ -55,7 +55,7 @@
             const GITHUB_BRANCH = "main";
 
             const MARKUP_PRICE = 700; 
-            const VND_TO_PHP_RATE = 0.00235; // Adjust this conversion rate as needed
+            const VND_TO_PHP_RATE = 0.00235;
 
             const [items, setItems] = useState([]);
             const [filterTab, setFilterTab] = useState('all');
@@ -100,7 +100,8 @@
                 setLoading(true);
                 const generated = [];
                 
-                for (let i = 3; i <= 101; i++) {
+                // Updated upper bound to 115 to include the newly uploaded items
+                for (let i = 3; i <= 115; i++) {
                     const paddedNum = String(i).padStart(3, '0');
                     const itemName = `Item ${paddedNum}`;
                     
@@ -162,7 +163,7 @@
 
             const displayedItems = items.filter(item => {
                 if (filterTab === 'new') {
-                    return item.numericId >= 95;
+                    return item.numericId >= 102; // Updated threshold to feature newly added items
                 }
                 return true;
             });
@@ -281,7 +282,6 @@
                             </nav>
 
                             <div className="flex items-center gap-3">
-                                {/* Floating Cart Button */}
                                 <button 
                                     onClick={() => setShowCartModal(true)}
                                     className="bg-amber-200 hover:bg-white text-stone-900 px-3.5 py-2 rounded-full text-xs font-semibold flex items-center gap-2 shadow-lg transition">
@@ -357,7 +357,7 @@
                                                 <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/60 backdrop-blur-md text-amber-100 text-[10px] sm:text-xs font-medium px-2.5 py-1 rounded-md border border-white/10">
                                                     {item.name} 🔍
                                                 </span>
-                                                {item.numericId >= 95 && (
+                                                {item.numericId >= 102 && (
                                                     <span className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 bg-amber-400 text-stone-900 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded shadow-md uppercase tracking-wider">
                                                         New
                                                     </span>
